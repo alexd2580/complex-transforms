@@ -1,5 +1,3 @@
-/* gcc optical_illusion.c -o optical_illusion `sdl2-config --cflags --libs` -lm -lSDL2_image -lGL -lGLU -Wall  */
-
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <SDL2/SDL.h>
@@ -112,7 +110,7 @@ int map_range(double* x, double a1, double a2, double b1, double b2) {
         return 0;
     }
 
-    // Shorten the interval to exclude the order values (often the computation is not defined for those).
+    // Shorten the interval to exclude the border values (often the computation is not defined for those).
     int positive_interval = b2 > b1;
     b1 += positive_interval ? 0.00000001 : -0.00000001;
     b2 -= positive_interval ? 0.00000001 : -0.00000001;
@@ -121,6 +119,7 @@ int map_range(double* x, double a1, double a2, double b1, double b2) {
     return 1;
 }
 
+// Batman function taken from here: https://geekshumor.com/batman-math-function/
 vec2 upper_wings_mask(double x) {
     double y = 1.5 * sqrt((-fabs(fabs(x) - 1)) * fabs(3 - fabs(x)) / ((fabs(x) - 1) * (3 - fabs(x)))) *
                    (1 + fabs(fabs(x) - 3) / (fabs(x) - 3)) * sqrt(1 - pow(x / 7, 2)) +
@@ -144,33 +143,6 @@ vec2 lower_flaps(double x) {
     double y = fabs(x / 2) - 0.0913722 * pow(x, 2) - 3 + sqrt(1 - pow(fabs(fabs(x) - 2) - 1, 2));
     return mk_vec2(x, y);
 }
-
-/* vec2 (double x) { */
-/*     if(x < 0.5) { */
-/*         x = 2.0 * x * (7 - 4.00001) + 4.00001; */
-/*     } else { */
-/*         x = 2.0 * (x - 0.5) * (-4.00001 + 7) - 7; */
-/*     } */
-/*     double y = (-3) * sqrt(1 - pow(x / 7, 2)) * sqrt(fabs(fabs(x) - 4) / (fabs(x) - 4)); */
-/*     return mk_vec2(x, y); */
-/* } */
-/*  */
-/* vec2 pt3(double x) { */
-/*     x = x * 8 - 4; */
-/*     double y = fabs(x / 2) - 0.0913722 * pow(x, 2) - 3 + sqrt(1 - pow(fabs(fabs(x) - 2) - 1, 2)); */
-/*     return mk_vec2(x, y); */
-/* } */
-/*  */
-/* vec2 pt4(double x) { */
-/*     if(x < 0.5) { */
-/*         x = 2.0 * x * (2.99999 - 1.00001) + 1.00001; */
-/*     } else { */
-/*         x = 2.0 * (x - 0.5) * (-1.00001 + 2.99999) - 2.99999; */
-/*     } */
-/*     double y = (2.71052 + 1.5 - 0.5 * fabs(x) - 1.35526 * sqrt(4 - pow(fabs(x) - 1, 2))) * */
-/*                sqrt(fabs(fabs(x) - 1) / (fabs(x) - 1)); */
-/*     return mk_vec2(x, y); */
-/* } */
 
 vec2 batman(double x) {
     if(map_range(&x, 0, 0.125, -1, 1))
@@ -220,10 +192,11 @@ vec2* compute_coefficients(int num_coefficients, int sample_rate) {
     vec2* coefficients = (vec2*)malloc(num_coefficients * sizeof(vec2));
     int index = 0;
     for(int i = 0; i < num_coefficients; i++) {
-        printf("%d\n", i);
+        printf("Computing coefficients: %.0f%%\r", 100.0 * i / num_coefficients);
         index += i % 2 == 0 ? -i : i;
         coefficients[i] = compute_coefficient(index, sample_rate);
     }
+    printf("Computing coefficients: Done   \n");
     return coefficients;
 }
 
@@ -360,7 +333,7 @@ int main(int argc, char* argv[]) {
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if (zoom) {
+        if(zoom) {
             glMatrixMode(GL_PROJECTION);
             glPushMatrix();
             glScaled(10.0, 10.0, 0.0);
@@ -397,7 +370,7 @@ int main(int argc, char* argv[]) {
         SDL_GL_SwapWindow(window);
         SDL_Delay(13);
 
-        if (zoom) {
+        if(zoom) {
             glMatrixMode(GL_PROJECTION);
             glPopMatrix();
         }
