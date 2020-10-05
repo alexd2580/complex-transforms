@@ -10,6 +10,13 @@ Required `SDL2` and `gcc`.
 make run
 ```
 
+# Controls
+
+z: toggle zoom to the cursor
+f s: faster/slower (larger/smaller step size)
++ - (Numpad): increase/decrease number of rendered coefficients (initially set to max = 10000)
+* / (Numpad): double/halve the number of rendered coefficients (initially set to max = 10000)
+
 ## Author
 
 Alexander Dmitriev
